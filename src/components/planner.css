@@ -1,0 +1,390 @@
+/* Planejador semanal — tudo escopado em .pl-root para não afetar o resto do app */
+
+.pl-root {
+  --pl-border: rgba(127, 127, 127, 0.35);
+  --pl-soft: rgba(127, 127, 127, 0.12);
+  --pl-accent: #396cd8;
+  --pl-late: #d9534f;
+  --pl-ok: #2e9e5b;
+  --pl-surface: #ffffff;
+
+  padding: 16px 20px 40px;
+  text-align: left;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pl-root {
+    --pl-surface: #2f2f2f;
+  }
+}
+
+/* neutraliza o estilo global pesado de input/button do App.css */
+.pl-root button {
+  padding: 2px 8px;
+  font-size: 0.85em;
+  box-shadow: none;
+  border: 1px solid var(--pl-border);
+  border-radius: 6px;
+  line-height: 1.5;
+}
+.pl-root button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.pl-root input:not([type='checkbox']),
+.pl-root select {
+  padding: 3px 6px;
+  font-size: 0.9em;
+  box-shadow: none;
+  border: 1px solid var(--pl-border);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+.pl-root select option {
+  color: #0f0f0f;
+}
+.pl-root input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  flex: none;
+  cursor: pointer;
+}
+.pl-root h2,
+.pl-root h3,
+.pl-root h4 {
+  margin: 0;
+  text-align: left;
+}
+.pl-root ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* barra superior */
+.pl-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.pl-range small {
+  font-weight: 400;
+  opacity: 0.6;
+}
+.pl-spacer {
+  flex: 1;
+}
+.pl-week-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+}
+.pl-week-progress .pl-progress {
+  width: 160px;
+}
+
+.pl-error {
+  color: var(--pl-late);
+  margin: 4px 0;
+}
+.pl-ok {
+  color: var(--pl-ok);
+  margin: 4px 0;
+}
+.pl-hint {
+  opacity: 0.7;
+  font-size: 0.9em;
+  margin: 8px 0;
+}
+
+/* progresso */
+.pl-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pl-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--pl-soft);
+  overflow: hidden;
+}
+.pl-bar-fill {
+  height: 100%;
+  background: var(--pl-ok);
+  transition: width 0.2s;
+}
+.pl-progress-text {
+  font-size: 0.75em;
+  opacity: 0.75;
+  min-width: 2.2em;
+  text-align: right;
+}
+
+/* em atraso */
+.pl-overdue {
+  border: 1px solid var(--pl-late);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 14px;
+}
+.pl-overdue-head {
+  border: none !important;
+  background: transparent !important;
+  color: var(--pl-late);
+  font-weight: 600;
+  padding: 0 !important;
+}
+.pl-overdue ul {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pl-overdue li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+}
+.pl-overdue li small {
+  opacity: 0.65;
+  flex: 1;
+}
+
+/* grade */
+.pl-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(190px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  align-items: start;
+}
+.pl-day {
+  border: 1px solid var(--pl-border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.pl-day.pl-today {
+  border-color: var(--pl-accent);
+  box-shadow: 0 0 0 1px var(--pl-accent);
+}
+.pl-day h3 {
+  font-size: 1em;
+}
+.pl-day h3 small {
+  font-weight: 400;
+  opacity: 0.6;
+}
+.pl-cell {
+  border-radius: 8px;
+  padding: 4px;
+  min-height: 44px;
+}
+.pl-cell.pl-drop {
+  background: var(--pl-soft);
+  outline: 2px dashed var(--pl-accent);
+}
+.pl-cell h4 {
+  font-size: 0.75em;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+
+/* tarefas */
+.pl-item {
+  margin-bottom: 4px;
+}
+.pl-item[draggable='true'] > .pl-row {
+  cursor: grab;
+}
+.pl-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  line-height: 1.3;
+}
+.pl-title {
+  flex: 1;
+  min-width: 60px;
+  overflow-wrap: anywhere;
+}
+.pl-title.pl-done {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+.pl-late > .pl-row .pl-title {
+  color: var(--pl-late);
+}
+.pl-title-input {
+  flex: 1;
+  min-width: 60px;
+}
+.pl-qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8em;
+}
+.pl-qty button {
+  padding: 0 6px;
+}
+.pl-chip {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 999px !important;
+  font-size: 0.75em !important;
+}
+.pl-actions {
+  display: inline-flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pl-row:hover .pl-actions,
+.pl-row:focus-within .pl-actions {
+  opacity: 1;
+}
+.pl-actions button {
+  border-color: transparent;
+  background: transparent;
+}
+.pl-kids {
+  margin-left: 22px;
+  margin-top: 2px;
+  font-size: 0.92em;
+}
+.pl-panel {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 4px 0 4px 22px;
+  padding: 6px;
+  border-radius: 8px;
+  background: var(--pl-soft);
+  font-size: 0.85em;
+}
+.pl-panel label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pl-panel input[type='number'] {
+  width: 64px;
+}
+
+.pl-add {
+  border-style: dashed !important;
+  background: transparent !important;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+.pl-add:hover {
+  opacity: 1;
+}
+.pl-add-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 2px;
+}
+
+/* metas da semana */
+.pl-goals {
+  margin-top: 18px;
+  border: 1px solid var(--pl-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  max-width: 560px;
+}
+.pl-goal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.pl-goal-name {
+  width: 150px;
+  flex: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pl-goal .pl-progress {
+  flex: 1;
+}
+
+/* modal da rotina */
+.pl-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.pl-modal-card {
+  background: var(--pl-surface);
+  color: inherit;
+  border-radius: 12px;
+  padding: 16px 18px;
+  width: min(1180px, 96vw);
+  max-height: 90vh;
+  overflow: auto;
+}
+.pl-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pl-tgrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(190px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+}
+.pl-tday {
+  border: 1px solid var(--pl-border);
+  border-radius: 10px;
+  padding: 8px;
+  min-width: 0;
+}
+.pl-tcell {
+  margin-top: 8px;
+}
+.pl-tcell h4 {
+  font-size: 0.75em;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+.pl-trow {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+  align-items: center;
+}
+.pl-t-title {
+  flex: 1;
+  min-width: 0;
+}
+.pl-t-qty {
+  width: 58px;
+}

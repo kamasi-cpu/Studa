@@ -11,12 +11,13 @@
   },
   "app": {
     "windows": [
-      {
-        "title": "meu-app-de-estudos",
-        "width": 800,
-        "height": 600
-      }
-    ],
+  {
+    "title": "meu-app-de-estudos",
+    "width": 1280,
+    "height": 820,
+    "dragDropEnabled": false
+  }
+],
     "security": {
       "csp": null
     }
