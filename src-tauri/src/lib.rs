@@ -160,6 +160,22 @@ fn save_note(
     Ok(())
 }
 
+#[tauri::command]
+fn update_note(
+    state: tauri::State<DbState>,
+    id: i32,
+    title: String,
+    content: String,
+) -> Result<(), String> {
+    let conn = state.inner().0.lock().map_err(|e| e.to_string())?;
+    conn.execute(
+        "UPDATE notes SET title = ?1, content = ?2 WHERE id = ?3",
+        params![title, content, id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 // Substitui get_all_notes + search_notes: texto e tag são ambos opcionais.
 #[tauri::command]
 fn search_notes(
@@ -278,6 +294,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
     save_note,
+    update_note,
     search_notes,
     delete_note,
     list_tags,

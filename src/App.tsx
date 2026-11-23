@@ -31,6 +31,7 @@ function App() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [newTags, setNewTags] = useState<string[]>([]); // tags do formulário de criação
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [notes, setNotes] = useState<Note[]>([]);
@@ -79,10 +80,15 @@ function App() {
 
     setLoading(true);
     try {
-      await invoke('save_note', { title, content, tags: newTags });
+      if (editingNoteId !== null) {
+        await invoke('update_note', { id: editingNoteId, title, content });
+      } else {
+        await invoke('save_note', { title, content, tags: newTags });
+      }
       setTitle('');
       setContent('');
       setNewTags([]);
+      setEditingNoteId(null);
       await Promise.all([fetchNotes(), refreshTags()]);
     } catch (err) {
       setError(err as string);
@@ -108,6 +114,22 @@ function App() {
     } catch (err) {
       setError(err as string);
     }
+  };
+
+  // Preenche o formulário com os dados da nota para edição
+  const handleEdit = (note: Note, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTitle(note.title);
+    setContent(note.content);
+    setEditingNoteId(note.id);
+  };
+
+  // Cancela a edição e volta ao modo de criação
+  const handleCancelEdit = () => {
+    setTitle('');
+    setContent('');
+    setNewTags([]);
+    setEditingNoteId(null);
   };
 
   // Edita as tags da nota que está aberta na coluna direita
@@ -161,7 +183,16 @@ function App() {
               <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título" style={{ padding: '8px' }} />
               <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Conteúdo..." style={{ padding: '8px', minHeight: '80px' }} />
               <TagInput tags={newTags} onChange={setNewTags} />
-              <button type="submit" disabled={loading} style={{ padding: '10px' }}>Salvar Nota</button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="submit" disabled={loading} style={{ padding: '10px' }}>
+                  {editingNoteId !== null ? 'Salvar Alterações' : 'Salvar Nota'}
+                </button>
+                {editingNoteId !== null && (
+                  <button type="button" onClick={handleCancelEdit} style={{ padding: '10px' }}>
+                    Cancelar Edição
+                  </button>
+                )}
+              </div>
             </form>
 
             <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
@@ -224,12 +255,20 @@ function App() {
                       </div>
                     )}
                   </span>
-                  <button
-                    onClick={(e) => handleDelete(note.id, e)}
-                    style={{ backgroundColor: '#ffcccc', color: 'red', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '2px 8px', alignSelf: 'flex-start' }}
-                  >
-                    Apagar
-                  </button>
+                  <div style={{ display: 'flex', gap: '6px', alignSelf: 'flex-start' }}>
+                    <button
+                      onClick={(e) => handleEdit(note, e)}
+                      style={{ backgroundColor: '#cfe2ff', color: '#1a3a8a', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '2px 8px' }}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(note.id, e)}
+                      style={{ backgroundColor: '#ffcccc', color: 'red', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '2px 8px' }}
+                    >
+                      Apagar
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
